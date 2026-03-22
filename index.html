@@ -55,9 +55,8 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script type="text/babel" data-presets="react">
 
-const { useState, useEffect } = React;
+const { useState } = React;
 
-// intensity: "red" | "yellow" | "green"
 const DEFAULT_PHASES = [
   { id:1, name:"Phase 1: Rebuild", short:"Rebuild", weeks:"Weeks 1-6", start:"2026-03-23", end:"2026-05-03", c:"teal",
     days:[
@@ -125,22 +124,22 @@ const COLORS = {
 };
 
 const INTENSITY = {
-  red:    { dot:"🔴", label:"Hard", sub:"85-95% effort", bg:"#FEE2E2", text:"#991B1B", border:"#FCA5A5" },
+  red:    { dot:"🔴", label:"Hard",     sub:"85-95% effort", bg:"#FEE2E2", text:"#991B1B", border:"#FCA5A5" },
   yellow: { dot:"🟡", label:"Moderate", sub:"70-85% effort", bg:"#FEF9C3", text:"#854D0E", border:"#FDE047" },
-  green:  { dot:"🟢", label:"Easy", sub:"60-70% effort", bg:"#DCFCE7", text:"#14532D", border:"#86EFAC" },
+  green:  { dot:"🟢", label:"Easy",     sub:"60-70% effort", bg:"#DCFCE7", text:"#14532D", border:"#86EFAC" },
 };
 
 const PAIN_LABELS = ["None","Mild","Moderate","High"];
-const PAIN_MAIN  = ["#1D9E75","#BA7517","#D85A30","#E24B4A"];
-const PAIN_BG    = ["var(--teal-l)","var(--amber-l)","#FAECE7","var(--red-l)"];
-const PAIN_TEXT  = ["var(--teal-t)","var(--amber-t)","#993C1D","var(--red-t)"];
-const DAY_ICONS  = ["🦵","🏃","💪","🔬","✨","⚡","🏅","🔥","😴","⏱","🎯","💥"];
+const PAIN_MAIN   = ["#1D9E75","#BA7517","#D85A30","#E24B4A"];
+const PAIN_BG     = ["var(--teal-l)","var(--amber-l)","#FAECE7","var(--red-l)"];
+const PAIN_TEXT   = ["var(--teal-t)","var(--amber-t)","#993C1D","var(--red-t)"];
+const DAY_ICONS   = ["🦵","🏃","💪","🔬","✨","⚡","🏅","🔥","😴","⏱","🎯","💥"];
 
-function pDate(s) { const [y,m,d]=s.split("-"); return new Date(+y,+m-1,+d); }
-function dKey(d) { return d.toISOString().split("T")[0]; }
-function fmt(d,opts) { return d.toLocaleDateString("en-US",opts); }
-function fmtFull(d) { return fmt(d,{weekday:"short",month:"short",day:"numeric",year:"numeric"}); }
-function fmtShort(d) { return fmt(d,{month:"short",day:"numeric"}); }
+function pDate(s){ const [y,m,d]=s.split("-"); return new Date(+y,+m-1,+d); }
+function dKey(d){ return d.toISOString().split("T")[0]; }
+function fmt(d,opts){ return d.toLocaleDateString("en-US",opts); }
+function fmtFull(d){ return fmt(d,{weekday:"short",month:"short",day:"numeric",year:"numeric"}); }
+function fmtShort(d){ return fmt(d,{month:"short",day:"numeric"}); }
 function getPhase(ds,phases){ return phases.find(p=>ds>=p.start&&ds<=p.end)||null; }
 function getWorkout(ph,ds){
   if(!ph)return null;
@@ -149,22 +148,16 @@ function getWorkout(ph,ds){
 }
 function getWeek(ds){ return Math.floor((pDate(ds)-pDate("2026-03-23"))/(7*864e5))+1; }
 function todayKey(){ return dKey(new Date()); }
-function clamp(ds){
-  if(ds<"2026-03-23")return "2026-03-23";
-  if(ds>"2027-01-25")return "2027-01-25";
-  return ds;
-}
-function addDays(ds,n){
-  const d=pDate(ds); d.setDate(d.getDate()+n); return clamp(dKey(d));
-}
+function clamp(ds){ if(ds<"2026-03-23")return "2026-03-23"; if(ds>"2027-01-25")return "2027-01-25"; return ds; }
+function addDays(ds,n){ const d=pDate(ds); d.setDate(d.getDate()+n); return clamp(dKey(d)); }
 
 const SK_ENTRIES="hyrox_entries_v1";
 const SK_PHASES="hyrox_phases_v1";
-function loadLS(key,fallback){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):fallback; }catch(_){ return fallback; } }
+function loadLS(key,fb){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):fb; }catch(_){ return fb; } }
 function saveLS(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(_){} }
 
 function IntensityBadge({intensity}){
-  const i = INTENSITY[intensity||"green"];
+  const i=INTENSITY[intensity||"green"];
   return (
     <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:20,background:i.bg,color:i.text,border:`1px solid ${i.border}`}}>
       {i.dot} {i.label} <span style={{fontWeight:400,opacity:0.8}}>· {i.sub}</span>
@@ -175,20 +168,19 @@ function IntensityBadge({intensity}){
 function Card({children,style={}}){
   return <div style={{background:"var(--bg)",border:"0.5px solid var(--border)",borderRadius:"var(--radius-lg)",overflow:"hidden",...style}}>{children}</div>;
 }
-function CardHeader({label,bg,borderColor,textColor,right}){
+function CardHeader({label,bg,borderColor,textColor}){
   return (
-    <div style={{padding:"10px 16px",background:bg||"var(--bg2)",borderBottom:`1px solid ${borderColor||"var(--border)"}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+    <div style={{padding:"10px 16px",background:bg||"var(--bg2)",borderBottom:`1px solid ${borderColor||"var(--border)"}`,display:"flex",alignItems:"center"}}>
       <span style={{fontSize:13,fontWeight:600,color:textColor||"var(--text)"}}>{label}</span>
-      {right}
     </div>
   );
 }
 
 function ExerciseRow({ex,i,exData,isRun,phase,onChange}){
   const col=COLORS[phase.c];
-  const inp=(placeholder,field,width)=>(
-    <input placeholder={placeholder} value={exData[field]||""} onChange={e=>onChange(field,e.target.value)}
-      style={{width,fontSize:12,padding:"5px 8px",borderRadius:8,border:`1px solid ${col.a}`,background:col.l,color:col.t}} />
+  const inp=(ph,f,w)=>(
+    <input placeholder={ph} value={exData[f]||""} onChange={e=>onChange(f,e.target.value)}
+      style={{width:w,fontSize:12,padding:"5px 8px",borderRadius:8,border:`1px solid ${col.a}`,background:col.l,color:col.t}} />
   );
   return (
     <div style={{padding:"10px 16px",borderBottom:"0.5px solid var(--border)"}}>
@@ -292,11 +284,9 @@ function LogView({entries,phases,sel,setSel,saveEntries}){
     const next=phases[0].map((p,pi)=>{
       const phIdx=phases[0].findIndex(ph=>ph.id===phase.id);
       if(pi!==phIdx)return p;
-      const days=p.days.map((d)=>d.day===workout.day?newDay:d);
-      return {...p,days};
+      return {...p,days:p.days.map(d=>d.day===workout.day?newDay:d)};
     });
-    phases[1](next);
-    setEditing(false);
+    phases[1](next); setEditing(false);
   }
 
   const navBtn=(dir)=>{
@@ -313,7 +303,6 @@ function LogView({entries,phases,sel,setSel,saveEntries}){
   return (
     <div style={{paddingBottom:16}}>
       {editing&&phase&&workout&&<EditModal phase={phase} workout={workout} onClose={()=>setEditing(false)} onSave={saveEdit} />}
-
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
         {navBtn(-1)}
         <div style={{flex:1,textAlign:"center"}}>
@@ -321,8 +310,7 @@ function LogView({entries,phases,sel,setSel,saveEntries}){
           <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:3,flexWrap:"wrap"}}>
             {phase&&<span style={{fontSize:12,padding:"3px 10px",borderRadius:20,background:col.l,color:col.t,fontWeight:500}}>Week {getWeek(sel)}</span>}
             {isToday&&<span style={{fontSize:12,padding:"3px 10px",borderRadius:20,background:"var(--bg2)",color:"var(--text2)",fontWeight:500}}>Today</span>}
-            <input type="date" value={sel} min="2026-03-23" max="2027-01-25"
-              onChange={e=>setSel(e.target.value)}
+            <input type="date" value={sel} min="2026-03-23" max="2027-01-25" onChange={e=>setSel(e.target.value)}
               style={{fontSize:11,padding:"3px 6px",borderRadius:6,border:"1px solid var(--border)",background:"transparent",color:"var(--text3)",width:110}} />
           </div>
         </div>
@@ -508,11 +496,9 @@ function ProgressView({entries,phases,setSel,setView}){
           }
         </div>
       </Card>
-
-      {/* Intensity legend */}
       <Card>
         <CardHeader label="Intensity guide" />
-        <div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:8}}>
+        <div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:10}}>
           {Object.entries(INTENSITY).map(([k,v])=>(
             <div key={k} style={{display:"flex",alignItems:"center",gap:10}}>
               <span style={{fontSize:16}}>{v.dot}</span>
@@ -537,11 +523,7 @@ function App(){
   const [view,setView]=useState("log");
 
   function setEntries(updater){
-    setEntriesRaw(prev=>{
-      const next=typeof updater==="function"?updater(prev):updater;
-      saveLS(SK_ENTRIES,next);
-      return next;
-    });
+    setEntriesRaw(prev=>{ const next=typeof updater==="function"?updater(prev):updater; saveLS(SK_ENTRIES,next); return next; });
   }
   function setPhases(next){ setPhasesRaw(next); saveLS(SK_PHASES,next); }
 
@@ -600,9 +582,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App />);
   </script>
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js');
-      });
+      window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); });
     }
   </script>
 </body>
