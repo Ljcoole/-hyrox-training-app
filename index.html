@@ -57,60 +57,61 @@
 
 const { useState, useEffect } = React;
 
+// intensity: "red" | "yellow" | "green"
 const DEFAULT_PHASES = [
-  { id:1, name:"Phase 1: Rebuild", short:"Rebuild", weeks:"Weeks 1–6", start:"2026-03-23", end:"2026-05-03", c:"teal",
+  { id:1, name:"Phase 1: Rebuild", short:"Rebuild", weeks:"Weeks 1-6", start:"2026-03-23", end:"2026-05-03", c:"teal",
     days:[
-      {day:"MON",label:"Foundation Lower",icon:"🦵",exercises:["Trap Bar Deadlift or Back Squat – 2x5 (start left leg on unilateral, 3 sec eccentric)","Romanian Deadlift – 2x8","Bulgarian Split Squat – 2x8 each leg (left leg first)","Seated/Lying Hamstring Curl – 2x12","Standing Calf Raises – 2x12–15"]},
-      {day:"TUE",label:"Base Jog Builder",icon:"🏃",exercises:["Jog 15–25 min continuous (conversational pace)","If knee feels off → slow down, don't push"]},
-      {day:"WED",label:"Upper Build (Heavy)",icon:"💪",exercises:["Bench Press – 2x6–8","Barbell or DB Row – 2x8","Shoulder Press – 2x8","Lat Pulldown / Pull-ups – 2x10","Lateral Raises – 2x15","Biceps – 2x10–12","Triceps – 2x10–12"]},
-      {day:"THU",label:"Knee Rebuild Lab",icon:"🔬",exercises:["Step-Ups (low box) – 2x10 each leg","Single-Leg RDL – 2x10 each leg","Split Squat Hold – 2x20–30 sec each leg","Double-leg pogo hops – 3x15 (quiet landings, control > height)","Assisted single-leg hops – 3x5 each leg"]},
-      {day:"FRI",label:"Upper Pump (Light)",icon:"✨",exercises:["Incline DB Press – 2x10–12","Lat Pulldown – 2x10–12","Lateral Raises – 2x15–20","Biceps – 2x12","Triceps – 2x12","Keep it short: 30–40 min"]},
-      {day:"SAT",label:"Light Circuit",icon:"⚡",exercises:["200–400m jog","10 walking lunges","500m bike/row","5–8 burpees","2–3 rounds / full recovery between rounds"]},
-      {day:"SUN",label:"Rest",icon:"😴",exercises:[]},
+      {day:"MON",label:"Foundation Lower",icon:"🦵",intensity:"red",exercises:["Trap Bar Deadlift / Squat - 2x5","RDL - 2x8","Bulgarian Split Squat - 2x8 each","Hamstring Curl - 2x12","Calf Raises - 2x12-15"]},
+      {day:"TUE",label:"Base Jog",icon:"🏃",intensity:"green",exercises:["15-25 min easy jog (conversational pace)","If knee feels off: slow down, don't push"]},
+      {day:"WED",label:"Upper Build",icon:"💪",intensity:"red",exercises:["Bench - 2x6-8","Row - 2x8","Shoulder Press - 2x8","Pulldown - 2x10","Lateral Raises - 2x15","Arms - 2x10-12"]},
+      {day:"THU",label:"Knee Rebuild Lab",icon:"🔬",intensity:"green",exercises:["Step-ups - 2x10 each leg","Single-leg RDL - 2x10 each leg","Split squat hold - 2x20-30 sec","Pogo hops - 3x15 (quiet landings)","Assisted single-leg hops - 3x5 each"]},
+      {day:"FRI",label:"Upper Pump",icon:"✨",intensity:"yellow",exercises:["Incline DB Press - 2x10-12","Lat Pulldown - 2x10-12","Lateral Raises - 2x15-20","Biceps - 2x12","Triceps - 2x12"]},
+      {day:"SAT",label:"Hyrox Skill Circuit",icon:"⚡",intensity:"yellow",exercises:["300-400m jog","10 lunges","500m row or SkiErg","30m farmer carry (light)","5-8 burpees","10 wall balls","2-3 rounds / full recovery between rounds"]},
+      {day:"SUN",label:"Rest",icon:"😴",intensity:"green",exercises:[]},
     ]
   },
-  { id:2, name:"Phase 2: Foundation Engine", short:"Foundation", weeks:"Weeks 7–14", start:"2026-05-04", end:"2026-06-28", c:"blue",
+  { id:2, name:"Phase 2: Foundation Engine", short:"Foundation", weeks:"Weeks 7-14", start:"2026-05-04", end:"2026-06-28", c:"blue",
     days:[
-      {day:"MON",label:"Strength Engine Lower",icon:"🦵",exercises:["Trap Bar Deadlift / Squat – 2x5 (heavier than Phase 1)","RDL – 2x8","Bulgarian Split Squat – 2x8","Hamstring Curl – 2x12","Calf Raises – 2x12–15","Optional: Light sled push – 3 rounds"]},
-      {day:"TUE",label:"Zone 2 Run",icon:"🏃",exercises:["Jog 20–40 min continuous (keep pace EASY)"]},
-      {day:"WED",label:"Upper Performance",icon:"💪",exercises:["Bench Press – 2x6–8 (slightly heavier than Phase 1)","Row – 2x8","Shoulder Press – 2x8","Pull-ups / Lat Pulldown – 2x10","Lateral Raises – 2x15","Arms – 2x10–12"]},
-      {day:"THU",label:"Power Reintro",icon:"⚡",exercises:["Step-Ups – 2x10","Single-Leg RDL – 2x10","Split Squat Hold – 2x20 sec","Pogo hops – 3x20","Single-leg hops – 3x5 each","Small unassisted single-leg hops – 2x5 each (if stable)"]},
-      {day:"FRI",label:"Upper Pump",icon:"✨",exercises:["Incline DB Press – 2x10–12","Lat Pulldown – 2x10–12","Lateral Raises – 2x15–20","Biceps – 2x12","Triceps – 2x12"]},
-      {day:"SAT",label:"Hybrid Base Circuit",icon:"🔥",exercises:["400m run","15 walking lunges","500m row","10 burpees","3–4 rounds / 60–90 sec rest","Optional late Phase 2: replace one run with 1 min faster / 2 min easy x 6 rounds"]},
-      {day:"SUN",label:"Rest",icon:"😴",exercises:[]},
+      {day:"MON",label:"Strength Lower",icon:"🦵",intensity:"red",exercises:["Trap Bar Deadlift / Squat - 2x5 (heavier than Phase 1)","RDL - 2x8","Bulgarian Split Squat - 2x8","Hamstring Curl - 2x12","Calf Raises - 2x12-15"]},
+      {day:"TUE",label:"Zone 2 Run",icon:"🏃",intensity:"green",exercises:["20-40 min easy jog (keep pace EASY)"]},
+      {day:"WED",label:"Upper Performance",icon:"💪",intensity:"red",exercises:["Bench - 2x6-8 (heavier than Phase 1)","Row - 2x8","Shoulder Press - 2x8","Pulldown - 2x10","Lateral Raises - 2x15","Arms - 2x10-12"]},
+      {day:"THU",label:"Power + Sled",icon:"⚡",intensity:"yellow",exercises:["Step-ups - 2x10","Single-leg RDL - 2x10","Split squat hold - 2x20 sec","Pogo hops - 3x20","Single-leg hops - 3x5 each","Sled push - 3 x 15-20m","Sled pull - 3 x 15-20m"]},
+      {day:"FRI",label:"Upper Pump",icon:"✨",intensity:"yellow",exercises:["Incline DB Press - 2x10-12","Lat Pulldown - 2x10-12","Lateral Raises - 2x15-20","Biceps - 2x12","Triceps - 2x12"]},
+      {day:"SAT",label:"Hyrox Base Circuit",icon:"🔥",intensity:"yellow",exercises:["400m run","15 sandbag lunges","500m SkiErg","40m farmer carry","10 burpees","15 wall balls","3-4 rounds / 60-90 sec rest"]},
+      {day:"SUN",label:"Rest",icon:"😴",intensity:"green",exercises:[]},
     ]
   },
-  { id:3, name:"Phase 3: Hybrid Build", short:"Hybrid Build", weeks:"Weeks 15–24", start:"2026-06-29", end:"2026-09-06", c:"amber",
+  { id:3, name:"Phase 3: Hybrid Build", short:"Hybrid Build", weeks:"Weeks 15-24", start:"2026-06-29", end:"2026-09-06", c:"amber",
     days:[
-      {day:"MON",label:"Force Maintenance Lower",icon:"🦵",exercises:["Trap Bar Deadlift / Squat – 2x5","RDL – 2x8","Bulgarian Split Squat – 2x8","Hamstring Curl – 2x12","Calves – 2x12–15"]},
-      {day:"TUE",label:"Threshold Intervals",icon:"⏱",exercises:["Warm-up: 5–10 min jog","3 min hard / 2 min easy x 5 rounds","Cooldown: 5 min walk"]},
-      {day:"WED",label:"Upper Maintain",icon:"💪",exercises:["Bench – 2x6–8","Row – 2x8","Shoulder Press – 2x8","Pull-ups / Lat Pulldown – 2x10","Lateral Raises – 2x15","Arms – 2x12"]},
-      {day:"THU",label:"Hyrox Skills Lab",icon:"🏅",exercises:["20 walking lunges","40m farmer carry (heavy)","500m row","15 wall balls (or DB thrusters)","3–4 rounds / 60–90 sec rest"]},
-      {day:"FRI",label:"Upper Pump",icon:"✨",exercises:["Incline DB Press – 2x10–12","Lat Pulldown – 2x10–12","Lateral Raises – 2x15–20","Biceps – 2x12","Triceps – 2x12"]},
-      {day:"SAT",label:"Hyrox Builder 1",icon:"🔥",exercises:["800m run","20 lunges","500m row","12 burpees","4 rounds / 60–90 sec rest"]},
-      {day:"SUN",label:"Rest",icon:"😴",exercises:[]},
+      {day:"MON",label:"Lower Maintenance",icon:"🦵",intensity:"red",exercises:["Squat / Trap Bar - 2x5","RDL - 2x8","Bulgarian Split Squat - 2x8","Hamstring Curl - 2x12"]},
+      {day:"TUE",label:"Interval Run",icon:"⏱",intensity:"red",exercises:["Warm-up: 5-10 min easy jog","3 min hard / 2 min easy x 5 rounds","Cooldown: 5 min walk"]},
+      {day:"WED",label:"Upper Maintain",icon:"💪",intensity:"yellow",exercises:["Bench - 2x6-8","Row - 2x8","Shoulder Press - 2x8","Pulldown - 2x10","Lateral Raises - 2x15","Arms - 2x10-12"]},
+      {day:"THU",label:"Hyrox Flow",icon:"🏅",intensity:"red",exercises:["800m run","500m SkiErg","800m run","20 sandbag lunges","800m run","500m row","800m run","40m farmer carry"]},
+      {day:"FRI",label:"Upper Pump",icon:"✨",intensity:"yellow",exercises:["Incline DB Press - 2x10-12","Lat Pulldown - 2x10-12","Lateral Raises - 2x15-20","Biceps - 2x12","Triceps - 2x12"]},
+      {day:"SAT",label:"Hyrox Builder",icon:"🔥",intensity:"red",exercises:["1km run","Sled push","1km run","Sled pull","1km run","Burpee broad jumps","1km run","1km row"]},
+      {day:"SUN",label:"Rest",icon:"😴",intensity:"green",exercises:[]},
     ]
   },
-  { id:4, name:"Phase 4: Performance", short:"Performance", weeks:"Weeks 25–36", start:"2026-09-07", end:"2026-11-29", c:"pink",
+  { id:4, name:"Phase 4: Performance", short:"Performance", weeks:"Weeks 25-36", start:"2026-09-07", end:"2026-11-29", c:"pink",
     days:[
-      {day:"MON",label:"Power Maintenance Lower",icon:"🦵",exercises:["Squat / Trap Bar – 2x5 (heavy)","RDL – 2x8","Split Squat – 2x8","Hamstring Curl – 2x12"]},
-      {day:"TUE",label:"Tempo Run",icon:"🏃",exercises:["Warm-up: 5–10 min","20–30 min steady hard pace","Cooldown"]},
-      {day:"WED",label:"Upper Maintain",icon:"💪",exercises:["Bench – 2x6–8","Row – 2x8","Shoulder Press – 2x8","Pull-ups / Lat Pulldown – 2x10","Lateral Raises – 2x15","Arms – 2x12"]},
-      {day:"THU",label:"Full Sim Lite",icon:"🏅",exercises:["1km run","Sled push (or heavy leg press)","1km run","Sled pull (or row substitute)","1km run","Burpee broad jumps (or regular burpees)","1km run","1km row","Scale loads, keep structure"]},
-      {day:"FRI",label:"Upper Pump",icon:"✨",exercises:["Incline DB Press – 2x10–12","Lat Pulldown – 2x10–12","Lateral Raises – 2x15–20","Biceps – 2x12","Triceps – 2x12"]},
-      {day:"SAT",label:"Endurance Mixer",icon:"🔥",exercises:["60 min continuous — rotate:","Run 400–800m","Row 500m","20 lunges","40m farmer carry","No full stops"]},
-      {day:"SUN",label:"Rest",icon:"😴",exercises:[]},
+      {day:"MON",label:"Lower Maintain",icon:"🦵",intensity:"yellow",exercises:["Squat - 2x5","RDL - 2x8","Light accessories"]},
+      {day:"TUE",label:"Tempo Run",icon:"🏃",intensity:"red",exercises:["Warm-up: 5-10 min","20-30 min steady hard pace","Cooldown"]},
+      {day:"WED",label:"Upper",icon:"💪",intensity:"yellow",exercises:["Bench - 2x6-8","Row - 2x8","Shoulder Press - 2x8","Pulldown - 2x10","Lateral Raises - 2x15","Arms - 2x10-12"]},
+      {day:"THU",label:"Full Hyrox Sim",icon:"🏅",intensity:"red",exercises:["1km run","SkiErg","1km run","Sled push","1km run","Sled pull","1km run","Burpee broad jumps","1km run","Row","1km run","Farmer carry","1km run","Lunges","1km run","Wall balls","Scale loads - keep order"]},
+      {day:"FRI",label:"Upper Pump",icon:"✨",intensity:"yellow",exercises:["Incline DB Press - 2x10-12","Lat Pulldown - 2x10-12","Lateral Raises - 2x15-20","Biceps - 2x12","Triceps - 2x12"]},
+      {day:"SAT",label:"Long Grind",icon:"🔥",intensity:"red",exercises:["60-75 min continuous - no stopping:","Run segments","Row segments","Farmer carries","Lunges"]},
+      {day:"SUN",label:"Rest",icon:"😴",intensity:"green",exercises:[]},
     ]
   },
-  { id:5, name:"Phase 5: Peak", short:"Peak", weeks:"Weeks 37–44", start:"2026-11-30", end:"2027-01-25", c:"purple",
+  { id:5, name:"Phase 5: Peak", short:"Peak", weeks:"Weeks 37-44", start:"2026-11-30", end:"2027-01-25", c:"purple",
     days:[
-      {day:"MON",label:"Light Power Lower",icon:"🦵",exercises:["Squat / Trap Bar – 2x3–5 (moderate)","RDL – 2x6–8","Light accessories"]},
-      {day:"TUE",label:"Race Pace Intervals",icon:"⚡",exercises:["1km run at race pace","2 min rest","x 4–6 rounds"]},
-      {day:"WED",label:"Upper Light",icon:"💪",exercises:["Bench – reduced volume","Row – reduced volume","Shoulder Press – reduced volume","Pulldown – reduced volume","Light arms + lateral raises"]},
-      {day:"THU",label:"Half Sim Sharpener",icon:"🏅",exercises:["4 rounds:","1km run","Then 1 Hyrox movement (rotate each round):","→ Round 1: lunges","→ Round 2: row","→ Round 3: burpees","→ Round 4: carries"]},
-      {day:"FRI",label:"Upper Pump (Optional)",icon:"✨",exercises:["Keep light or skip if fatigued","Incline DB Press – 2x10","Lat Pulldown – 2x10","Lateral Raises – 2x15","Arms – 2x12"]},
-      {day:"SAT",label:"Controlled Sim",icon:"🔥",exercises:["60–70% effort full simulation","Focus on pacing — NOT max effort","Practice transitions between movements"]},
-      {day:"SUN",label:"Rest",icon:"😴",exercises:[]},
+      {day:"MON",label:"Light Lower",icon:"🦵",intensity:"green",exercises:["Squat - 2x3-5 (moderate)","Light accessories"]},
+      {day:"TUE",label:"Race Pace Intervals",icon:"⚡",intensity:"red",exercises:["1km run at race pace","Rest 2 min","x 4-6 rounds"]},
+      {day:"WED",label:"Upper Light",icon:"💪",intensity:"green",exercises:["Bench - reduced volume","Row - reduced volume","Shoulder Press - reduced volume","Pulldown - reduced volume","Light arms + lateral raises"]},
+      {day:"THU",label:"Half Sim",icon:"🏅",intensity:"red",exercises:["4 rounds - 1km run then rotate movement:","Round 1: Sled push","Round 2: Row","Round 3: Lunges","Round 4: Burpees"]},
+      {day:"FRI",label:"Optional Pump",icon:"✨",intensity:"green",exercises:["Keep light or skip if fatigued","Incline DB Press - 2x10","Lat Pulldown - 2x10","Lateral Raises - 2x15","Arms - 2x12"]},
+      {day:"SAT",label:"Controlled Sim",icon:"🔥",intensity:"yellow",exercises:["60-70% effort full simulation","Focus on pacing - NOT max effort","Practice transitions between movements"]},
+      {day:"SUN",label:"Rest",icon:"😴",intensity:"green",exercises:[]},
     ]
   }
 ];
@@ -123,12 +124,17 @@ const COLORS = {
   purple: { main:"#7F77DD", l:"var(--purple-l)", t:"var(--purple-t)", a:"var(--purple-a)" },
 };
 
+const INTENSITY = {
+  red:    { dot:"🔴", label:"Hard", sub:"85-95% effort", bg:"#FEE2E2", text:"#991B1B", border:"#FCA5A5" },
+  yellow: { dot:"🟡", label:"Moderate", sub:"70-85% effort", bg:"#FEF9C3", text:"#854D0E", border:"#FDE047" },
+  green:  { dot:"🟢", label:"Easy", sub:"60-70% effort", bg:"#DCFCE7", text:"#14532D", border:"#86EFAC" },
+};
+
 const PAIN_LABELS = ["None","Mild","Moderate","High"];
 const PAIN_MAIN  = ["#1D9E75","#BA7517","#D85A30","#E24B4A"];
 const PAIN_BG    = ["var(--teal-l)","var(--amber-l)","#FAECE7","var(--red-l)"];
 const PAIN_TEXT  = ["var(--teal-t)","var(--amber-t)","#993C1D","var(--red-t)"];
 const DAY_ICONS  = ["🦵","🏃","💪","🔬","✨","⚡","🏅","🔥","😴","⏱","🎯","💥"];
-const DAYS_FULL  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
 function pDate(s) { const [y,m,d]=s.split("-"); return new Date(+y,+m-1,+d); }
 function dKey(d) { return d.toISOString().split("T")[0]; }
@@ -148,17 +154,23 @@ function clamp(ds){
   if(ds>"2027-01-25")return "2027-01-25";
   return ds;
 }
-function addDays(ds, n){
-  const d = pDate(ds);
-  d.setDate(d.getDate()+n);
-  return clamp(dKey(d));
+function addDays(ds,n){
+  const d=pDate(ds); d.setDate(d.getDate()+n); return clamp(dKey(d));
 }
 
-const SK_ENTRIES = "hyrox_entries_v1";
-const SK_PHASES  = "hyrox_phases_v1";
-
+const SK_ENTRIES="hyrox_entries_v1";
+const SK_PHASES="hyrox_phases_v1";
 function loadLS(key,fallback){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):fallback; }catch(_){ return fallback; } }
 function saveLS(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(_){} }
+
+function IntensityBadge({intensity}){
+  const i = INTENSITY[intensity||"green"];
+  return (
+    <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:20,background:i.bg,color:i.text,border:`1px solid ${i.border}`}}>
+      {i.dot} {i.label} <span style={{fontWeight:400,opacity:0.8}}>· {i.sub}</span>
+    </span>
+  );
+}
 
 function Card({children,style={}}){
   return <div style={{background:"var(--bg)",border:"0.5px solid var(--border)",borderRadius:"var(--radius-lg)",overflow:"hidden",...style}}>{children}</div>;
@@ -207,13 +219,24 @@ function EditModal({phase,workout,onClose,onSave}){
       <div style={{background:"var(--bg)",borderRadius:"18px 18px 0 0",width:"100%",maxHeight:"88vh",overflowY:"auto",paddingBottom:"calc(24px + var(--safe-bottom))"}}>
         <div style={{position:"sticky",top:0,background:"var(--bg)",borderBottom:"0.5px solid var(--border)",padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",zIndex:1}}>
           <span style={{fontSize:16,fontWeight:600}}>Edit workout</span>
-          <button onClick={onClose} style={{background:"var(--bg2)",border:"none",borderRadius:"50%",width:30,height:30,fontSize:18,lineHeight:"30px",color:"var(--text2)"}}>×</button>
+          <button onClick={onClose} style={{background:"var(--bg2)",border:"none",borderRadius:"50%",width:30,height:30,fontSize:18,lineHeight:"30px",color:"var(--text2)"}}>x</button>
         </div>
         <div style={{padding:"16px"}}>
           <div style={{marginBottom:14}}>
             <label style={{fontSize:12,color:"var(--text2)",display:"block",marginBottom:5}}>Workout name</label>
             <input value={day.label} onChange={e=>setDay({...day,label:e.target.value})}
               style={{width:"100%",fontSize:15,padding:"9px 12px",borderRadius:"var(--radius)",border:"1px solid var(--border2)",background:"var(--bg2)",color:"var(--text)"}} />
+          </div>
+          <div style={{marginBottom:14}}>
+            <label style={{fontSize:12,color:"var(--text2)",display:"block",marginBottom:7}}>Intensity</label>
+            <div style={{display:"flex",gap:8}}>
+              {Object.entries(INTENSITY).map(([k,v])=>(
+                <button key={k} onClick={()=>setDay({...day,intensity:k})}
+                  style={{flex:1,padding:"8px 4px",fontSize:12,borderRadius:"var(--radius)",border:day.intensity===k?`2px solid ${v.border}`:"1px solid var(--border)",background:day.intensity===k?v.bg:"var(--bg2)",color:day.intensity===k?v.text:"var(--text2)",fontWeight:day.intensity===k?600:400}}>
+                  {v.dot} {v.label}
+                </button>
+              ))}
+            </div>
           </div>
           <div style={{marginBottom:16}}>
             <label style={{fontSize:12,color:"var(--text2)",display:"block",marginBottom:7}}>Icon</label>
@@ -234,10 +257,10 @@ function EditModal({phase,workout,onClose,onSave}){
                   <button onClick={()=>moveEx(i,-1)} style={{width:24,height:20,fontSize:9,border:"1px solid var(--border)",borderRadius:4,background:"var(--bg2)",color:"var(--text2)"}}>▲</button>
                   <button onClick={()=>moveEx(i,1)}  style={{width:24,height:20,fontSize:9,border:"1px solid var(--border)",borderRadius:4,background:"var(--bg2)",color:"var(--text2)"}}>▼</button>
                 </div>
-                <input value={ex} onChange={e=>updateEx(i,e.target.value)} placeholder="e.g. Bench Press – 3x8"
+                <input value={ex} onChange={e=>updateEx(i,e.target.value)} placeholder="e.g. Bench Press - 3x8"
                   style={{flex:1,fontSize:14,padding:"8px 10px",borderRadius:"var(--radius)",border:"1px solid var(--border2)",background:"var(--bg2)",color:"var(--text)"}} />
                 <button onClick={()=>removeEx(i)}
-                  style={{width:34,height:34,fontSize:18,lineHeight:1,borderRadius:"var(--radius)",border:"1px solid var(--red-a)",background:"var(--red-l)",color:"var(--red-t)",flexShrink:0}}>×</button>
+                  style={{width:34,height:34,fontSize:18,lineHeight:1,borderRadius:"var(--radius)",border:"1px solid var(--red-a)",background:"var(--red-l)",color:"var(--red-t)",flexShrink:0}}>x</button>
               </div>
             ))}
             <button onClick={addEx} style={{width:"100%",padding:"10px",fontSize:14,fontWeight:500,borderRadius:"var(--radius)",border:`1.5px dashed ${col.main}`,background:col.l,color:col.main}}>+ Add exercise</button>
@@ -276,13 +299,13 @@ function LogView({entries,phases,sel,setSel,saveEntries}){
     setEditing(false);
   }
 
-  const navBtn = (dir) => {
-    const next = addDays(sel, dir);
-    const disabled = (dir===-1 && sel==="2026-03-23") || (dir===1 && sel==="2027-01-25");
+  const navBtn=(dir)=>{
+    const next=addDays(sel,dir);
+    const disabled=(dir===-1&&sel==="2026-03-23")||(dir===1&&sel==="2027-01-25");
     return (
       <button onClick={()=>setSel(next)} disabled={disabled}
         style={{width:40,height:40,borderRadius:"50%",border:"1px solid var(--border2)",background:"var(--bg2)",color:disabled?"var(--text3)":"var(--text)",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-        {dir===-1 ? "‹" : "›"}
+        {dir===-1?"<":">"}
       </button>
     );
   };
@@ -291,14 +314,13 @@ function LogView({entries,phases,sel,setSel,saveEntries}){
     <div style={{paddingBottom:16}}>
       {editing&&phase&&workout&&<EditModal phase={phase} workout={workout} onClose={()=>setEditing(false)} onSave={saveEdit} />}
 
-      {/* Date nav row */}
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
         {navBtn(-1)}
         <div style={{flex:1,textAlign:"center"}}>
           <div style={{fontSize:15,fontWeight:600,color:"var(--text)"}}>{fmtFull(pDate(sel))}</div>
           <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:3,flexWrap:"wrap"}}>
-            {phase && <span style={{fontSize:12,padding:"3px 10px",borderRadius:20,background:col.l,color:col.t,fontWeight:500}}>Week {getWeek(sel)}</span>}
-            {isToday && <span style={{fontSize:12,padding:"3px 10px",borderRadius:20,background:"var(--bg2)",color:"var(--text2)",fontWeight:500}}>Today</span>}
+            {phase&&<span style={{fontSize:12,padding:"3px 10px",borderRadius:20,background:col.l,color:col.t,fontWeight:500}}>Week {getWeek(sel)}</span>}
+            {isToday&&<span style={{fontSize:12,padding:"3px 10px",borderRadius:20,background:"var(--bg2)",color:"var(--text2)",fontWeight:500}}>Today</span>}
             <input type="date" value={sel} min="2026-03-23" max="2027-01-25"
               onChange={e=>setSel(e.target.value)}
               style={{fontSize:11,padding:"3px 6px",borderRadius:6,border:"1px solid var(--border)",background:"transparent",color:"var(--text3)",width:110}} />
@@ -307,23 +329,26 @@ function LogView({entries,phases,sel,setSel,saveEntries}){
         {navBtn(1)}
       </div>
 
-      {!phase&&<div style={{padding:"2rem",background:"var(--bg2)",borderRadius:"var(--radius-lg)",color:"var(--text2)",fontSize:14,textAlign:"center"}}>Outside program dates.<br/>Select Mar 23, 2026 – Jan 25, 2027.</div>}
+      {!phase&&<div style={{padding:"2rem",background:"var(--bg2)",borderRadius:"var(--radius-lg)",color:"var(--text2)",fontSize:14,textAlign:"center"}}>Outside program dates.</div>}
 
       {phase&&workout&&(
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          <div style={{background:col.main,borderRadius:"var(--radius-lg)",padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-            <div>
-              <div style={{fontSize:20,fontWeight:700,color:"#fff"}}>{workout.icon} {workout.label}</div>
-              <div style={{fontSize:13,color:"rgba(255,255,255,0.75)",marginTop:3}}>{phase.name}</div>
+          <div style={{background:col.main,borderRadius:"var(--radius-lg)",padding:"14px 16px"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+              <div>
+                <div style={{fontSize:20,fontWeight:700,color:"#fff"}}>{workout.icon} {workout.label}</div>
+                <div style={{fontSize:13,color:"rgba(255,255,255,0.75)",marginTop:2}}>{phase.name}</div>
+              </div>
+              <button onClick={()=>setEditing(true)} style={{padding:"7px 14px",fontSize:12,fontWeight:600,borderRadius:8,border:"1.5px solid rgba(255,255,255,0.45)",background:"rgba(255,255,255,0.15)",color:"#fff"}}>Edit</button>
             </div>
-            <button onClick={()=>setEditing(true)} style={{padding:"7px 14px",fontSize:12,fontWeight:600,borderRadius:8,border:"1.5px solid rgba(255,255,255,0.45)",background:"rgba(255,255,255,0.15)",color:"#fff"}}>Edit</button>
+            <IntensityBadge intensity={workout.intensity} />
           </div>
 
           {workout.exercises.length>0&&(
             <Card>
               <CardHeader label="Exercises" bg={col.l} borderColor={col.a} textColor={col.t} />
               {workout.exercises.map((ex,i)=>{
-                const isRun=/jog|run|row|pace|min|km|warm|cool|walk/.test(ex.toLowerCase());
+                const isRun=/jog|run|row|pace|min|km|warm|cool|walk|ski/.test(ex.toLowerCase());
                 return <ExerciseRow key={i} ex={ex} i={i} exData={(entry.exercises||{})[i]||{}} isRun={isRun} phase={phase} onChange={(f,v)=>upEx(i,f,v)} />;
               })}
             </Card>
@@ -356,7 +381,7 @@ function LogView({entries,phases,sel,setSel,saveEntries}){
           </Card>
 
           <Card>
-            <CardHeader label={`Effort (RPE): ${entry.rpe||"—"}/10`} bg={col.l} borderColor={col.a} textColor={col.t} />
+            <CardHeader label={`Effort (RPE): ${entry.rpe||"?"}/10`} bg={col.l} borderColor={col.a} textColor={col.t} />
             <div style={{padding:"12px 16px 16px"}}>
               <input type="range" min={1} max={10} step={1} value={entry.rpe||5} onChange={e=>upEntry("rpe",+e.target.value)} style={{width:"100%",accentColor:col.main}} />
               <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"var(--text3)",marginTop:4}}>
@@ -366,7 +391,7 @@ function LogView({entries,phases,sel,setSel,saveEntries}){
           </Card>
 
           <button onClick={()=>upEntry("completed",!entry.completed)} style={{width:"100%",padding:"15px",fontSize:16,fontWeight:700,borderRadius:"var(--radius-lg)",border:entry.completed?`2px solid ${col.main}`:"1.5px solid var(--border2)",background:entry.completed?col.main:"var(--bg2)",color:entry.completed?"#fff":"var(--text)",transition:"all 0.2s"}}>
-            {entry.completed?`✓ Logged — ${workout.label}`:"Mark as complete"}
+            {entry.completed?`Logged - ${workout.label}`:"Mark as complete"}
           </button>
         </div>
       )}
@@ -391,7 +416,7 @@ function OverviewView({entries,phases,setSel,setView}){
             <div style={{background:`linear-gradient(90deg,${col.main}15,${col.l})`,padding:"12px 16px",borderBottom:`1px solid ${col.a}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div>
                 <div style={{fontSize:14,fontWeight:700,color:col.t}}>{p.name}</div>
-                <div style={{fontSize:12,color:col.main,marginTop:1}}>{p.weeks} · {fmtShort(pDate(p.start))} – {fmtShort(pDate(p.end))}</div>
+                <div style={{fontSize:12,color:col.main,marginTop:1}}>{p.weeks} · {fmtShort(pDate(p.start))} - {fmtShort(pDate(p.end))}</div>
               </div>
               <div style={{textAlign:"right"}}>
                 <div style={{fontSize:20,fontWeight:700,color:col.main}}>{pct}%</div>
@@ -439,7 +464,7 @@ function ProgressView({entries,phases,setSel,setView}){
         <CardHeader label="Knee pain log" bg="var(--red-l)" borderColor="var(--red-a)" textColor="var(--red-t)" />
         <div style={{padding:"8px 0"}}>
           {painDays.length===0
-            ? <div style={{padding:"12px 16px",fontSize:13,color:"var(--text2)"}}>No pain flagged — keep it that way.</div>
+            ? <div style={{padding:"12px 16px",fontSize:13,color:"var(--text2)"}}>No pain flagged - keep it that way.</div>
             : painDays.map(d=>{
                 const pi=PAIN_LABELS.indexOf(entries[d].pain);
                 return (
@@ -457,7 +482,7 @@ function ProgressView({entries,phases,setSel,setView}){
         <CardHeader label="Recent sessions" />
         <div style={{padding:"4px 0"}}>
           {Object.keys(entries).filter(d=>entries[d].completed).sort().reverse().slice(0,20).length===0
-            ? <div style={{padding:"12px 16px",fontSize:13,color:"var(--text2)"}}>No completed sessions yet. Starts tomorrow!</div>
+            ? <div style={{padding:"12px 16px",fontSize:13,color:"var(--text2)"}}>No completed sessions yet.</div>
             : Object.keys(entries).filter(d=>entries[d].completed).sort().reverse().slice(0,20).map(d=>{
                 const ph=getPhase(d,phases);
                 const w=getWorkout(ph,d);
@@ -471,6 +496,7 @@ function ProgressView({entries,phases,setSel,setView}){
                     <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:3}}>
                       <span style={{fontSize:13,fontWeight:600,color:"var(--text)"}}>{fmtFull(pDate(d))}</span>
                       {col&&w&&<span style={{fontSize:11,padding:"2px 8px",borderRadius:20,background:col.l,color:col.t,border:`1px solid ${col.a}`}}>{w.label}</span>}
+                      {w&&w.intensity&&<span style={{fontSize:11}}>{INTENSITY[w.intensity].dot}</span>}
                       {rpe&&<span style={{fontSize:11,color:"var(--text3)"}}>RPE {rpe}</span>}
                       {entries[d].pain&&entries[d].pain!=="None"&&<span style={{fontSize:11,color:PAIN_MAIN[pi]}}>{entries[d].pain} pain</span>}
                     </div>
@@ -480,6 +506,24 @@ function ProgressView({entries,phases,setSel,setView}){
                 );
               })
           }
+        </div>
+      </Card>
+
+      {/* Intensity legend */}
+      <Card>
+        <CardHeader label="Intensity guide" />
+        <div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:8}}>
+          {Object.entries(INTENSITY).map(([k,v])=>(
+            <div key={k} style={{display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:16}}>{v.dot}</span>
+              <div>
+                <div style={{fontSize:13,fontWeight:600,color:"var(--text)"}}>{v.label} <span style={{fontWeight:400,color:"var(--text2)"}}>· {v.sub}</span></div>
+                <div style={{fontSize:11,color:"var(--text3)"}}>
+                  {k==="green"?"Feel fresh after, can hold conversation":k==="yellow"?"Breathing elevated, fatigue controlled":"Near limit, used sparingly"}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </Card>
     </div>
@@ -513,7 +557,7 @@ function App(){
             <div>
               <div style={{fontSize:11,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase",color:"rgba(255,255,255,0.7)"}}>Hyrox Training Journal</div>
               <div style={{fontSize:20,fontWeight:700,color:"#fff",marginTop:2,lineHeight:1.2}}>{phase?phase.name:"Program Complete"}</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,0.7)",marginTop:2}}>{phase?phase.weeks+" · ":""} Mar 23 '26 → Spring '27</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.7)",marginTop:2}}>{phase?phase.weeks+" · ":""} Mar 23 26 to Spring 27</div>
             </div>
             <div style={{textAlign:"right",paddingTop:2}}>
               <div style={{fontSize:26,fontWeight:700,color:"#fff"}}>{completed}</div>
