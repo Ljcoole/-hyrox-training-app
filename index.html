@@ -310,26 +310,72 @@ function EditModal({phase,workout,onClose,onSave}){
   );
 }
 
-// Profile switcher modal
-function ProfileModal({profiles, current, onSelect, onAdd, onClose}){
+const PROFILE_EMOJIS = ["👤","💪","🏃","🔥","⚡","🎯","🏅","🦵","😤","🧠","👊","🥇"];
+
+function ProfileModal({profiles, current, onSelect, onAdd, onRename, onChangeEmoji, profileEmojis, onClose}){
   const [newName, setNewName] = useState("");
+  const [editingProfile, setEditingProfile] = useState(null); // profile name being edited
+  const [editName, setEditName] = useState("");
+  const [pickingEmoji, setPickingEmoji] = useState(null); // profile name picking emoji for
+
+  function startEdit(p){ setEditingProfile(p); setEditName(p); setPickingEmoji(null); }
+  function saveEdit(){ if(editName.trim() && editName.trim()!==editingProfile){ onRename(editingProfile, editName.trim()); } setEditingProfile(null); }
+
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:300,display:"flex",alignItems:"flex-end"}}
-      onClick={e=>{ if(e.target===e.currentTarget)onClose(); }}>
-      <div style={{background:"var(--bg)",borderRadius:"18px 18px 0 0",width:"100%",paddingBottom:"calc(24px + var(--safe-bottom))"}}>
+      onClick={e=>{ if(e.target===e.currentTarget){ setEditingProfile(null); setPickingEmoji(null); onClose(); } }}>
+      <div style={{background:"var(--bg)",borderRadius:"18px 18px 0 0",width:"100%",maxHeight:"85vh",overflowY:"auto",paddingBottom:"calc(24px + var(--safe-bottom))"}}>
         <div style={{padding:"14px 16px",borderBottom:"0.5px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <span style={{fontSize:16,fontWeight:600}}>Profiles</span>
           <button onClick={onClose} style={{background:"var(--bg2)",border:"none",borderRadius:"50%",width:30,height:30,fontSize:18,lineHeight:"30px",color:"var(--text2)"}}>x</button>
         </div>
         <div style={{padding:"12px 16px"}}>
-          {profiles.map(p=>(
-            <button key={p} onClick={()=>{ onSelect(p); onClose(); }}
-              style={{width:"100%",padding:"12px 16px",marginBottom:8,borderRadius:"var(--radius-lg)",border:p===current?"2px solid #1D9E75":"1px solid var(--border2)",background:p===current?"var(--teal-l)":"var(--bg2)",color:p===current?"var(--teal-t)":"var(--text)",fontSize:15,fontWeight:p===current?600:400,textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
-              <span style={{fontSize:20}}>{p===current?"✓":"👤"}</span> {p}
-            </button>
-          ))}
-          <div style={{display:"flex",gap:8,marginTop:8}}>
-            <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="New profile name..."
+          {profiles.map(p=>{
+            const emoji = profileEmojis[p] || "👤";
+            const isActive = p === current;
+            const isEditing = editingProfile === p;
+            const isPickingEmoji = pickingEmoji === p;
+            return (
+              <div key={p} style={{marginBottom:10}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:"var(--radius-lg)",border:isActive?"2px solid #1D9E75":"1px solid var(--border2)",background:isActive?"var(--teal-l)":"var(--bg2)"}}>
+                  {/* Emoji avatar — tap to change */}
+                  <button onClick={()=>{ setPickingEmoji(isPickingEmoji?null:p); setEditingProfile(null); }}
+                    style={{width:40,height:40,borderRadius:"50%",border:"1.5px solid var(--border2)",background:"var(--bg)",fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    {emoji}
+                  </button>
+                  {isEditing ? (
+                    <input value={editName} onChange={e=>setEditName(e.target.value)}
+                      autoFocus
+                      onKeyDown={e=>{ if(e.key==="Enter")saveEdit(); if(e.key==="Escape")setEditingProfile(null); }}
+                      style={{flex:1,fontSize:15,padding:"6px 10px",borderRadius:"var(--radius)",border:"1.5px solid #1D9E75",background:"var(--bg)",color:"var(--text)"}} />
+                  ) : (
+                    <span onClick={()=>{ onSelect(p); onClose(); }} style={{flex:1,fontSize:15,fontWeight:isActive?600:400,color:isActive?"var(--teal-t)":"var(--text)",cursor:"pointer"}}>{p}</span>
+                  )}
+                  {isEditing ? (
+                    <button onClick={saveEdit} style={{padding:"6px 12px",fontSize:13,fontWeight:600,borderRadius:"var(--radius)",border:"none",background:"#1D9E75",color:"#fff",flexShrink:0}}>Save</button>
+                  ) : (
+                    <button onClick={()=>startEdit(p)} style={{padding:"6px 12px",fontSize:12,borderRadius:"var(--radius)",border:"1px solid var(--border2)",background:"transparent",color:"var(--text2)",flexShrink:0}}>Edit</button>
+                  )}
+                </div>
+                {/* Emoji picker */}
+                {isPickingEmoji && (
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap",padding:"10px 14px",background:"var(--bg2)",borderRadius:"0 0 var(--radius-lg) var(--radius-lg)",border:"1px solid var(--border)",borderTop:"none",marginTop:-4}}>
+                    {PROFILE_EMOJIS.map(ic=>(
+                      <button key={ic} onClick={()=>{ onChangeEmoji(p,ic); setPickingEmoji(null); }}
+                        style={{width:38,height:38,fontSize:20,borderRadius:"var(--radius)",border:emoji===ic?"2px solid #1D9E75":"1px solid var(--border)",background:emoji===ic?"var(--teal-l)":"var(--bg)"}}>
+                        {ic}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {/* Create new profile */}
+          <div style={{display:"flex",gap:8,marginTop:4}}>
+            <input value={newName} onChange={e=>setNewName(e.target.value)}
+              placeholder="New profile name..."
+              onKeyDown={e=>{ if(e.key==="Enter"&&newName.trim()){ onAdd(newName.trim()); setNewName(""); }}}
               style={{flex:1,fontSize:14,padding:"10px 12px",borderRadius:"var(--radius)",border:"1px solid var(--border2)",background:"var(--bg2)",color:"var(--text)"}} />
             <button onClick={()=>{ if(newName.trim()){ onAdd(newName.trim()); setNewName(""); } }}
               style={{padding:"10px 16px",fontSize:14,fontWeight:600,borderRadius:"var(--radius)",border:"none",background:"#1D9E75",color:"#fff"}}>
@@ -600,6 +646,7 @@ function App(){
   // Profile management
   const [profiles, setProfiles] = useState(()=>loadLS("hyrox_profiles", ["LJ"]));
   const [profile, setProfile] = useState(()=>loadLS("hyrox_active_profile", "LJ"));
+  const [profileEmojis, setProfileEmojis] = useState(()=>loadLS("hyrox_profile_emojis", {}));
   const [showProfiles, setShowProfiles] = useState(false);
 
   // Per-profile data
@@ -631,13 +678,34 @@ function App(){
     setProfile(name);
   }
 
+  function renameProfile(oldName, newName){
+    if(profiles.includes(newName)) return; // already exists
+    const next = profiles.map(p=>p===oldName?newName:p);
+    setProfiles(next); saveLS("hyrox_profiles",next);
+    // migrate data
+    const oldEntries = loadLS(sk(oldName,"entries"),{});
+    const oldPhases = loadLS(sk(oldName,"phases"),DEFAULT_PHASES);
+    saveLS(sk(newName,"entries"), oldEntries);
+    saveLS(sk(newName,"phases"), oldPhases);
+    // migrate emoji
+    const nextEmojis = {...profileEmojis};
+    if(nextEmojis[oldName]){ nextEmojis[newName]=nextEmojis[oldName]; delete nextEmojis[oldName]; }
+    setProfileEmojis(nextEmojis); saveLS("hyrox_profile_emojis",nextEmojis);
+    if(profile===oldName){ setProfile(newName); saveLS("hyrox_active_profile",newName); }
+  }
+
+  function changeEmoji(p, emoji){
+    const next = {...profileEmojis, [p]: emoji};
+    setProfileEmojis(next); saveLS("hyrox_profile_emojis",next);
+  }
+
   const phase=getPhase(sel,phases);
   const col=phase?COLORS[phase.c]:null;
   const completed=Object.keys(entries).filter(k=>entries[k].completed).length;
 
   return (
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",background:"var(--bg)"}}>
-      {showProfiles&&<ProfileModal profiles={profiles} current={profile} onSelect={setProfile} onAdd={addProfile} onClose={()=>setShowProfiles(false)} />}
+      {showProfiles&&<ProfileModal profiles={profiles} current={profile} profileEmojis={profileEmojis} onSelect={setProfile} onAdd={addProfile} onRename={renameProfile} onChangeEmoji={changeEmoji} onClose={()=>setShowProfiles(false)} />}
 
       <div className="safe-top" style={{background:col?col.main:"#1D9E75"}}>
         <div style={{padding:"12px 16px 0"}}>
@@ -650,7 +718,7 @@ function App(){
             <div style={{textAlign:"right",paddingTop:2,display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
               {/* Profile switcher */}
               <button onClick={()=>setShowProfiles(true)} style={{padding:"4px 10px",borderRadius:20,border:"1.5px solid rgba(255,255,255,0.45)",background:"rgba(255,255,255,0.15)",color:"#fff",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",gap:5}}>
-                👤 {profile}
+                {profileEmojis[profile]||"👤"} {profile}
               </button>
               <div style={{fontSize:26,fontWeight:700,color:"#fff"}}>{completed}</div>
               <div style={{fontSize:10,color:"rgba(255,255,255,0.65)"}}>days logged</div>
