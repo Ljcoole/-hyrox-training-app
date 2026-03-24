@@ -310,42 +310,62 @@ function EditModal({phase,workout,onClose,onSave}){
   );
 }
 
-const PROFILE_EMOJIS = ["👤","💪","🏃","🔥","⚡","🎯","🏅","🦵","😤","🧠","👊","🥇"];
+const PROFILE_EMOJIS = ["💪","🏃","🔥","⚡","🎯","🏅","🦵","😤","🧠","👊","🥇","🏋️","🧗","🚴","🤸","🏊"];
 
-function ProfileModal({profiles, current, onSelect, onAdd, onRename, onChangeEmoji, profileEmojis, onClose}){
+function AvatarDisplay({avatar, size=40}){
+  // avatar is either an emoji string or a base64 data URL
+  const isPhoto = avatar && avatar.startsWith("data:");
+  if(isPhoto){
+    return <img src={avatar} style={{width:size,height:size,borderRadius:"50%",objectFit:"cover",border:"1.5px solid var(--border2)",flexShrink:0}} />;
+  }
+  return (
+    <div style={{width:size,height:size,borderRadius:"50%",border:"1.5px solid var(--border2)",background:"var(--bg)",fontSize:size*0.5,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+      {avatar||"👤"}
+    </div>
+  );
+}
+
+function ProfileModal({profiles, current, onSelect, onAdd, onRename, onChangeAvatar, profileAvatars, onClose}){
   const [newName, setNewName] = useState("");
-  const [editingProfile, setEditingProfile] = useState(null); // profile name being edited
+  const [editingProfile, setEditingProfile] = useState(null);
   const [editName, setEditName] = useState("");
-  const [pickingEmoji, setPickingEmoji] = useState(null); // profile name picking emoji for
+  const [pickingAvatar, setPickingAvatar] = useState(null);
+  const [customEmoji, setCustomEmoji] = useState("");
 
-  function startEdit(p){ setEditingProfile(p); setEditName(p); setPickingEmoji(null); }
+  function startEdit(p){ setEditingProfile(p); setEditName(p); setPickingAvatar(null); }
   function saveEdit(){ if(editName.trim() && editName.trim()!==editingProfile){ onRename(editingProfile, editName.trim()); } setEditingProfile(null); }
+
+  function handlePhotoUpload(p, e){
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => { onChangeAvatar(p, ev.target.result); setPickingAvatar(null); };
+    reader.readAsDataURL(file);
+  }
 
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:300,display:"flex",alignItems:"flex-end"}}
-      onClick={e=>{ if(e.target===e.currentTarget){ setEditingProfile(null); setPickingEmoji(null); onClose(); } }}>
-      <div style={{background:"var(--bg)",borderRadius:"18px 18px 0 0",width:"100%",maxHeight:"85vh",overflowY:"auto",paddingBottom:"calc(24px + var(--safe-bottom))"}}>
-        <div style={{padding:"14px 16px",borderBottom:"0.5px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+      onClick={e=>{ if(e.target===e.currentTarget){ setEditingProfile(null); setPickingAvatar(null); onClose(); } }}>
+      <div style={{background:"var(--bg)",borderRadius:"18px 18px 0 0",width:"100%",maxHeight:"88vh",overflowY:"auto",paddingBottom:"calc(24px + var(--safe-bottom))"}}>
+        <div style={{position:"sticky",top:0,background:"var(--bg)",borderBottom:"0.5px solid var(--border)",padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",zIndex:1}}>
           <span style={{fontSize:16,fontWeight:600}}>Profiles</span>
           <button onClick={onClose} style={{background:"var(--bg2)",border:"none",borderRadius:"50%",width:30,height:30,fontSize:18,lineHeight:"30px",color:"var(--text2)"}}>x</button>
         </div>
         <div style={{padding:"12px 16px"}}>
           {profiles.map(p=>{
-            const emoji = profileEmojis[p] || "👤";
+            const avatar = profileAvatars[p] || "👤";
             const isActive = p === current;
             const isEditing = editingProfile === p;
-            const isPickingEmoji = pickingEmoji === p;
+            const isPicking = pickingAvatar === p;
             return (
               <div key={p} style={{marginBottom:10}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:"var(--radius-lg)",border:isActive?"2px solid #1D9E75":"1px solid var(--border2)",background:isActive?"var(--teal-l)":"var(--bg2)"}}>
-                  {/* Emoji avatar — tap to change */}
-                  <button onClick={()=>{ setPickingEmoji(isPickingEmoji?null:p); setEditingProfile(null); }}
-                    style={{width:40,height:40,borderRadius:"50%",border:"1.5px solid var(--border2)",background:"var(--bg)",fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    {emoji}
+                <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:isPicking?"var(--radius-lg) var(--radius-lg) 0 0":"var(--radius-lg)",border:isActive?"2px solid #1D9E75":"1px solid var(--border2)",background:isActive?"var(--teal-l)":"var(--bg2)"}}>
+                  {/* Avatar — tap to change */}
+                  <button onClick={()=>{ setPickingAvatar(isPicking?null:p); setEditingProfile(null); }} style={{background:"none",border:"none",padding:0,cursor:"pointer",flexShrink:0}}>
+                    <AvatarDisplay avatar={avatar} size={44} />
                   </button>
                   {isEditing ? (
-                    <input value={editName} onChange={e=>setEditName(e.target.value)}
-                      autoFocus
+                    <input value={editName} onChange={e=>setEditName(e.target.value)} autoFocus
                       onKeyDown={e=>{ if(e.key==="Enter")saveEdit(); if(e.key==="Escape")setEditingProfile(null); }}
                       style={{flex:1,fontSize:15,padding:"6px 10px",borderRadius:"var(--radius)",border:"1.5px solid #1D9E75",background:"var(--bg)",color:"var(--text)"}} />
                   ) : (
@@ -354,25 +374,51 @@ function ProfileModal({profiles, current, onSelect, onAdd, onRename, onChangeEmo
                   {isEditing ? (
                     <button onClick={saveEdit} style={{padding:"6px 12px",fontSize:13,fontWeight:600,borderRadius:"var(--radius)",border:"none",background:"#1D9E75",color:"#fff",flexShrink:0}}>Save</button>
                   ) : (
-                    <button onClick={()=>startEdit(p)} style={{padding:"6px 12px",fontSize:12,borderRadius:"var(--radius)",border:"1px solid var(--border2)",background:"transparent",color:"var(--text2)",flexShrink:0}}>Edit</button>
+                    <button onClick={()=>startEdit(p)} style={{padding:"6px 12px",fontSize:12,borderRadius:"var(--radius)",border:"1px solid var(--border2)",background:"transparent",color:"var(--text2)",flexShrink:0}}>Rename</button>
                   )}
                 </div>
-                {/* Emoji picker */}
-                {isPickingEmoji && (
-                  <div style={{display:"flex",gap:8,flexWrap:"wrap",padding:"10px 14px",background:"var(--bg2)",borderRadius:"0 0 var(--radius-lg) var(--radius-lg)",border:"1px solid var(--border)",borderTop:"none",marginTop:-4}}>
-                    {PROFILE_EMOJIS.map(ic=>(
-                      <button key={ic} onClick={()=>{ onChangeEmoji(p,ic); setPickingEmoji(null); }}
-                        style={{width:38,height:38,fontSize:20,borderRadius:"var(--radius)",border:emoji===ic?"2px solid #1D9E75":"1px solid var(--border)",background:emoji===ic?"var(--teal-l)":"var(--bg)"}}>
-                        {ic}
+
+                {/* Avatar picker panel */}
+                {isPicking && (
+                  <div style={{background:"var(--bg2)",borderRadius:"0 0 var(--radius-lg) var(--radius-lg)",border:"1px solid var(--border2)",borderTop:"none",padding:"12px 14px"}}>
+                    {/* Preset emojis */}
+                    <div style={{fontSize:11,color:"var(--text3)",marginBottom:7,fontWeight:500}}>Pick an emoji</div>
+                    <div style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:12}}>
+                      {PROFILE_EMOJIS.map(ic=>(
+                        <button key={ic} onClick={()=>{ onChangeAvatar(p,ic); setPickingAvatar(null); }}
+                          style={{width:38,height:38,fontSize:20,borderRadius:"var(--radius)",border:avatar===ic?"2px solid #1D9E75":"1px solid var(--border)",background:avatar===ic?"var(--teal-l)":"var(--bg)",cursor:"pointer"}}>
+                          {ic}
+                        </button>
+                      ))}
+                    </div>
+                    {/* Custom emoji input */}
+                    <div style={{fontSize:11,color:"var(--text3)",marginBottom:7,fontWeight:500}}>Or type any emoji</div>
+                    <div style={{display:"flex",gap:8,marginBottom:14}}>
+                      <input value={customEmoji} onChange={e=>setCustomEmoji(e.target.value)}
+                        placeholder="Type emoji from keyboard..."
+                        style={{flex:1,fontSize:20,padding:"6px 10px",borderRadius:"var(--radius)",border:"1px solid var(--border2)",background:"var(--bg)",color:"var(--text)"}} />
+                      <button onClick={()=>{ if(customEmoji.trim()){ onChangeAvatar(p,customEmoji.trim()); setPickingAvatar(null); setCustomEmoji(""); }}}
+                        style={{padding:"8px 14px",fontSize:13,fontWeight:600,borderRadius:"var(--radius)",border:"none",background:"#1D9E75",color:"#fff"}}>
+                        Set
                       </button>
-                    ))}
+                    </div>
+                    {/* Photo upload */}
+                    <div style={{fontSize:11,color:"var(--text3)",marginBottom:7,fontWeight:500}}>Or use a photo</div>
+                    <label style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:"var(--radius)",border:"1.5px dashed var(--border2)",background:"var(--bg)",cursor:"pointer"}}>
+                      <span style={{fontSize:20}}>📷</span>
+                      <span style={{fontSize:13,color:"var(--text2)"}}>Choose from camera roll or take photo</span>
+                      <input type="file" accept="image/*" capture="user"
+                        onChange={e=>handlePhotoUpload(p,e)}
+                        style={{display:"none"}} />
+                    </label>
                   </div>
                 )}
               </div>
             );
           })}
+
           {/* Create new profile */}
-          <div style={{display:"flex",gap:8,marginTop:4}}>
+          <div style={{display:"flex",gap:8,marginTop:8}}>
             <input value={newName} onChange={e=>setNewName(e.target.value)}
               placeholder="New profile name..."
               onKeyDown={e=>{ if(e.key==="Enter"&&newName.trim()){ onAdd(newName.trim()); setNewName(""); }}}
@@ -646,7 +692,7 @@ function App(){
   // Profile management
   const [profiles, setProfiles] = useState(()=>loadLS("hyrox_profiles", ["LJ"]));
   const [profile, setProfile] = useState(()=>loadLS("hyrox_active_profile", "LJ"));
-  const [profileEmojis, setProfileEmojis] = useState(()=>loadLS("hyrox_profile_emojis", {}));
+  const [profileAvatars, setProfileAvatars] = useState(()=>loadLS("hyrox_profile_avatars", {}));
   const [showProfiles, setShowProfiles] = useState(false);
 
   // Per-profile data
@@ -688,15 +734,15 @@ function App(){
     saveLS(sk(newName,"entries"), oldEntries);
     saveLS(sk(newName,"phases"), oldPhases);
     // migrate emoji
-    const nextEmojis = {...profileEmojis};
-    if(nextEmojis[oldName]){ nextEmojis[newName]=nextEmojis[oldName]; delete nextEmojis[oldName]; }
-    setProfileEmojis(nextEmojis); saveLS("hyrox_profile_emojis",nextEmojis);
+    const nextAvatars = {...profileAvatars};
+    if(nextAvatars[oldName]){ nextAvatars[newName]=nextAvatars[oldName]; delete nextAvatars[oldName]; }
+    setProfileAvatars(nextAvatars); saveLS("hyrox_profile_avatars", nextAvatars);
     if(profile===oldName){ setProfile(newName); saveLS("hyrox_active_profile",newName); }
   }
 
-  function changeEmoji(p, emoji){
-    const next = {...profileEmojis, [p]: emoji};
-    setProfileEmojis(next); saveLS("hyrox_profile_emojis",next);
+  function changeAvatar(p, avatar){
+    const next = {...profileAvatars, [p]: avatar};
+    setProfileAvatars(next); saveLS("hyrox_profile_avatars", next);
   }
 
   const phase=getPhase(sel,phases);
@@ -705,7 +751,7 @@ function App(){
 
   return (
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",background:"var(--bg)"}}>
-      {showProfiles&&<ProfileModal profiles={profiles} current={profile} profileEmojis={profileEmojis} onSelect={setProfile} onAdd={addProfile} onRename={renameProfile} onChangeEmoji={changeEmoji} onClose={()=>setShowProfiles(false)} />}
+      {showProfiles&&<ProfileModal profiles={profiles} current={profile} profileAvatars={profileAvatars} onSelect={setProfile} onAdd={addProfile} onRename={renameProfile} onChangeAvatar={changeAvatar} onClose={()=>setShowProfiles(false)} />}
 
       <div className="safe-top" style={{background:col?col.main:"#1D9E75"}}>
         <div style={{padding:"12px 16px 0"}}>
@@ -717,8 +763,9 @@ function App(){
             </div>
             <div style={{textAlign:"right",paddingTop:2,display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
               {/* Profile switcher */}
-              <button onClick={()=>setShowProfiles(true)} style={{padding:"4px 10px",borderRadius:20,border:"1.5px solid rgba(255,255,255,0.45)",background:"rgba(255,255,255,0.15)",color:"#fff",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",gap:5}}>
-                {profileEmojis[profile]||"👤"} {profile}
+              <button onClick={()=>setShowProfiles(true)} style={{padding:"4px 6px 4px 4px",borderRadius:20,border:"1.5px solid rgba(255,255,255,0.45)",background:"rgba(255,255,255,0.15)",color:"#fff",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
+                <AvatarDisplay avatar={profileAvatars[profile]||"👤"} size={24} />
+                {profile}
               </button>
               <div style={{fontSize:26,fontWeight:700,color:"#fff"}}>{completed}</div>
               <div style={{fontSize:10,color:"rgba(255,255,255,0.65)"}}>days logged</div>
